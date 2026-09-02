@@ -70,3 +70,35 @@ export const Intro = styled.p`
     max-width: 700px;
   `)}
 `
+
+export const Covers = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+// same uppercase-label treatment as SuggestedPrompts' "Try" — warmCream@0.6,
+// not driftwood, see RequestErrorNotice.styles.js for why
+export const CoversLabel = styled.div`
+  font-size: 10px;
+  font-weight: ${({ theme }) => theme.font.weightMedium};
+  color: ${({ theme }) => theme.color.warmCream};
+  opacity: 0.6;
+  text-transform: uppercase;
+
+  ${media.tablet(`
+    font-size: 11px;
+  `)}
+`
+
+export const CoversList = styled.p`
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: ${({ theme }) => theme.font.weightRegular};
+  color: ${({ theme }) => theme.color.warmCream};
+
+  ${media.tablet(`
+    max-width: 592px;
+  `)}
+`

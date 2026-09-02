@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 _rate_limits: dict = {}
-MAX_REQUESTS = 5
+MAX_REQUESTS = 6
 WINDOW = timedelta(days=2)
 
 def check_and_increment(ip: str) -> bool:
