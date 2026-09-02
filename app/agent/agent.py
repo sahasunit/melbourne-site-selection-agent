@@ -36,7 +36,7 @@ def run_agent(user_question: str, conversation_id: str) -> dict:
     SYSTEM_PROMPT = (
                     "When answering, do not restate raw numbers already present in the tool "
                     "results — the user sees those in structured cards. Your job is to interpret "
-                    "and recommend, not repeat data. Keep answers to roughly 150-300 words. "
+                    "and recommend, not repeat data. Keep answers to roughly 80-280 words. "
                     "Never use markdown tables. Use short paragraphs or a brief bulleted list of "
                     "insights (not raw stats) if comparing multiple areas. "
                     "\n\n"
