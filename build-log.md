@@ -1997,3 +1997,100 @@ feature-complete and verified working together.
 
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
+
+## Deploy Session — Sun 21 Sep
+
+### Goal
+Session 6: deploy backend to Railway, frontend to Vercel, wire CORS between
+them, verify the full live stack works end to end.
+
+### Pre-deploy fixup batch (carried in from prior sessions, closed today)
+Five items landed before deploy began:
+- Landing-page headline rework — 8 candidate variations generated across two
+  rounds ("know before you sign the lease" framing and question-format
+  follow-ups); final pick deferred to Sunit, not yet locked.
+- "COVERS" list added to the empty state — plain text, not tappable, listing
+  all 9 supported areas beneath the existing TRY suggestions.
+- Multi-area / off-topic guard added to SYSTEM_PROMPT — explicit instruction
+  not to attempt a broad "compare all of Melbourne" request even under
+  repeated rephrasing, list the 9 supported areas and ask for specifics
+  instead, and decline any off-topic or prompt-injection-style attempt to
+  redirect the agent away from its actual purpose. Deliberately a soft,
+  prompt-level guard rather than a hard backend cap — a known, accepted
+  tradeoff given the real risk is bounded (quota exhaustion, not security).
+- 15 loading facts written (mixing verified project findings — e.g. "Carlton
+  has 49 cafés within 200m of one sensor" — with low-risk general Melbourne
+  trivia) and handed to Claude Code to implement as a rotating display during
+  in-flight `/ask` requests only, never on initial page load.
+- Auto-scroll fixed to trigger only when the user sends a new message, not on
+  every incoming response — preserves a user's scroll position if they've
+  scrolled up to re-read something.
+
+All five confirmed done and verified before deploy began.
+
+### Railway backend deploy
+Created `Procfile`: `web: uv run uvicorn app.api.main:app --host 0.0.0.0
+--port $PORT`. Two real gotchas caught before commit, not after a failed
+build:
+- First attempt tried running the Procfile's contents directly in the
+  terminal (`web: uvicorn ...`) instead of writing it to a file — corrected
+  to `echo '...' > Procfile`.
+- Confirmed via research that Railway's build system (Railpack) auto-detects
+  `uv` when `pyproject.toml` + `uv.lock` are present in a single-service repo
+  — the workspace-specific `uv` issues found in research apply to multi-
+  service monorepos, not this project's structure. Kept `uv run` in the
+  Procfile regardless, since some Railway configurations don't expose `uv`
+  globally at runtime even after using it at build time — `uv run` is the
+  defensive choice either way.
+
+First deploy attempt succeeded. Verified live (not just "build succeeded"):
+`/docs` loads, a real `POST /ask` call for the CBD returned genuine live CoM
+data (peak 3pm, 3,298 pedestrians, complete 24-hour breakdown, no gaps) with
+a clean, well-formed answer — no markdown table, no leaked error text,
+reasonable length. Confirms the SYSTEM_PROMPT fixes from the previous session
+hold up in the actual production environment, not just local testing.
+
+One false alarm during verification: `sensing_date` in the live response
+initially looked like a future date and was flagged as a possible clock-skew
+or date-logic bug — resolved immediately once the actual current date was
+confirmed; the returned date was correctly a few days in the past, consistent
+with the completeness-check logic. Worth the moment of caution given this
+project's real history of date-related bugs (partial-day data, timezone
+confusion) — this one just wasn't one of them.
+
+### Frontend Vercel deploy
+Root directory set to `frontend` (same pattern as Project 2). Environment
+variable pointed at the live Railway URL. Verified locally first — ran the
+frontend against the live Railway backend (not localhost) before involving
+Vercel at all, isolating "does the frontend correctly talk to the deployed
+backend" from "does Vercel's build environment work" as two separate
+questions. Confirmed working before deploying to Vercel.
+
+### CORS wiring — a real gap caught by inspection, not by a failure
+Checked Railway's environment variables before assuming `ALLOWED_ORIGINS`
+was already set — it wasn't. Only `ANTHROPIC_API_KEY` existed as a service
+variable; the backend had been running this entire time on the code's
+fallback default (`http://localhost:3000` only). This meant the live Vercel
+frontend would have been silently blocked by CORS the moment it tried to
+call the real backend, if this hadn't been caught first.
+
+Created `ALLOWED_ORIGINS` as a new variable (comma-separated:
+`localhost:3000` for continued local dev + the real Vercel URL for
+production), triggered a Railway redeploy to pick up the new variable.
+
+### Status at stop
+**Full stack live and verified working end to end:**
+https://melbourne-site-selection-agent.vercel.app/ — real Railway backend,
+real Vercel frontend, CORS correctly configured, tested with genuine live
+City of Melbourne data end to end through the actual deployed UI.
+
+This closes Session 6 and, with it, the core scope-doc build (Sessions 1-6
++ the area-expansion and frontend sessions added along the way). The project
+went from Session 1's "prove the loop" goal in late July to a fully deployed,
+publicly-usable product.
+
+### Next
+README rewrite (matching Project 2's established style/tone) drafted, not
+yet committed. PROJECT_3_SCOPE.md and memory need updating to reflect
+shipped status. Landing-page headline still pending final selection from
+the candidate list generated pre-deploy.
