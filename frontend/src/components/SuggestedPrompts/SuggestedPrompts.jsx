@@ -4,7 +4,7 @@ import { Wrapper, Label, List } from './SuggestedPrompts.styles'
 const PROMPTS = [
   'Compare Carlton and Kensington for a café',
   "What's foot traffic like in Southbank?",
-  'Busiest hour on Lygon Street',
+  'Will a cookie café work in Carlton?',
   'Is the CBD saturated with cafés?',
 ]
 
